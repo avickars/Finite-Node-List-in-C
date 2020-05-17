@@ -7,19 +7,11 @@ int main() {
 
     List*ptr = List_create();
     List_append(ptr, (int *) 5);
-    List_append(ptr, (int *) 6);
-    List_append(ptr, (int *) 7);
-    List_prepend(ptr, (int *) 8);
+    printf("%d \n", ptr->size);
     print(ptr);
-    printf("\n Current: %d", ptr->current->data);
-    List_prev(ptr);
-//    List_next(ptr);
-//    List_next(ptr);
-//    List_next(ptr);
-//    List_next(ptr);
-//    printf("\n Current: %d", ptr->current->data);
-    printf("\n %d", ptr->currentOutOfBoundsFront);
-    List_insert(ptr,(int *) 10);
+    List_remove(ptr);
+    printf("%d \n", ptr->size);
+    List_insert(ptr, (int *) 10);
     print(ptr);
 
 

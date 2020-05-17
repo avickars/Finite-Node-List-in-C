@@ -49,13 +49,19 @@ void *Get_new_node(void *pItem) {
 }
 
 void print(List *pList) {
-    printf("\n");
     Node *temp = pList->head;
     while (temp != NULL) {
         printf("%d ", temp->data);
         temp = temp->next;
     }
     printf("\n");
+}
+
+void Return_node(Node *pNode) {
+//    initializeNode(pNode);
+    pNode->next = availableNodes;
+    availableNodes = pNode;
+    numNodes--;
 }
 
 
@@ -246,7 +252,39 @@ int List_prepend(List* pList, void* pItem) {
 // Return current item and take it out of pList. Make the next item the current one.
 // If the current pointer is before the start of the pList, or beyond the end of the pList,
 // then do not change the pList and return NULL.
-void* List_remove(List* pList);
+void* List_remove(List* pList) {
+    if (pList->currentOutOfBoundsFront || pList->currentOutOfBoundsBack) {
+        return NULL;
+    } else {
+        void *data = pList->current->data;
+        if (pList->size == 1) {
+            Return_node(pList->current);
+            initializeList(pList);
+        } else if (pList->current == pList->head) {
+            pList->head = pList->current->next;
+            pList->head->previous = NULL;
+            Return_node(pList->current);
+            pList->current = pList->head;
+            pList->size--;
+        } else if(pList->current == pList->tail) {
+            pList->tail = pList->current->previous;
+            pList->tail->next = NULL;
+            Return_node(pList->current);
+            pList->current = pList->tail;
+            List_next(pList);
+            pList->size--;
+        } else {
+            Node *temp = pList->current->next;
+            pList->current->previous->next = pList->current->next;
+            pList->current->next->previous = pList->current->previous;
+            Return_node(pList->current);
+            pList->current = temp;
+            pList->size--;
+
+        }
+        return data;
+    }
+}
 
 // Adds pList2 to the end of pList1. The current pointer is set to the current pointer of pList1.
 // pList2 no longer exists after the operation; its head is available
