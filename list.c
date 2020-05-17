@@ -49,12 +49,13 @@ void *Get_new_node(void *pItem) {
 }
 
 void print(List *pList) {
+    printf("\n");
     Node *temp = pList->head;
-    printf("In Print \n");
     while (temp != NULL) {
-        printf("%p \n", (int*) temp->data);
+        printf("%d ", temp->data);
         temp = temp->next;
     }
+    printf("\n");
 }
 
 
@@ -131,25 +132,65 @@ void* List_prev(List* pList) {
 
 // Returns a pointer to the current item in pList.
 // Returns NULL if current is before the start of the pList, or after the end of the pList.
-void* List_curr(List* pList);
+void* List_curr(List* pList) {
+    if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront)
+        return NULL;
+    else
+        return pList->current;
+}
 
 // Adds the new item to pList directly after the current item, and makes item the current item.
 // If the current pointer is before the start of the pList, the item is added at the start. If
 // the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
-int List_add(List* pList, void* pItem);
+int List_add(List* pList, void* pItem) {
+    if (numNodes >= LIST_MAX_NUM_NODES)
+        return -1;
+
+    if (pList->currentOutOfBoundsBack || pList->current == pList->tail) {
+        return List_append(pList, pItem);
+    } else if (pList->currentOutOfBoundsFront) {
+        return List_prepend(pList, pItem);
+    } else {
+        Node *newNode = Get_new_node(pItem);
+        newNode->next = pList->current->next;
+        newNode->previous = pList->current;
+        pList->current->next->previous = newNode;
+        pList->current->next = newNode;
+        pList->size++;
+        return 0;
+    }
+
+}
 
 // Adds item to pList directly before the current item, and makes the new item the current one.
 // If the current pointer is before the start of the pList, the item is added at the start.
 // If the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
-int List_insert(List* pList, void* pItem);
+int List_insert(List* pList, void* pItem) {
+    if (numNodes >= LIST_MAX_NUM_NODES)
+        return -1;
+
+    if (pList->currentOutOfBoundsBack) {
+        return List_append(pList, pItem);
+    } else if (pList->currentOutOfBoundsFront || pList->current == pList->head) {
+        return List_prepend(pList, pItem);
+    } else {
+        Node *newNode = Get_new_node(pItem);
+        newNode->next = pList->current;
+        newNode->previous = pList->current->previous;
+        pList->current->previous->next = newNode;
+        pList->current->previous = newNode;
+        pList->size++;
+        return 0;
+    }
+}
 
 // Adds item to the end of pList, and makes the new item the current one.
 // Returns 0 on success, -1 on failure.
 int List_append(List* pList, void* pItem) {
     if (numNodes >= LIST_MAX_NUM_NODES) {
-        return 0;
+        return -1;
     } else if (pList->size == 0) {
         pList->current = Get_new_node(pItem);
         pList->head = pList->current;
@@ -170,6 +211,7 @@ int List_append(List* pList, void* pItem) {
                 pList->currentOutOfBoundsBack = false;
         }
     }
+    return 0;
 }
 
 
@@ -177,7 +219,7 @@ int List_append(List* pList, void* pItem) {
 // Returns 0 on success, -1 on failure.
 int List_prepend(List* pList, void* pItem) {
     if (numNodes >= LIST_MAX_NUM_NODES) {
-        return 0;
+        return -1;
     } else if (pList->size == 0) {
         pList->current = Get_new_node(pItem);
         pList->head = pList->current;
@@ -198,6 +240,7 @@ int List_prepend(List* pList, void* pItem) {
                 pList->currentOutOfBoundsBack = false;
         }
     }
+    return 0;
 }
 
 // Return current item and take it out of pList. Make the next item the current one.

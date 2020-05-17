@@ -9,17 +9,19 @@ int main() {
     List_append(ptr, (int *) 5);
     List_append(ptr, (int *) 6);
     List_append(ptr, (int *) 7);
-//    List_prepend(ptr, (int *) 8);
+    List_prepend(ptr, (int *) 8);
     print(ptr);
-    printf("%i \n", List_count(ptr));
-    List_first(ptr);
-    printf("%p \n", (int*) ptr->current->data);
-    List_next(ptr);
+    printf("\n Current: %d", ptr->current->data);
     List_prev(ptr);
-    List_prev(ptr);
-    printf("%d \n", ptr->currentOutOfBoundsFront);
+//    List_next(ptr);
+//    List_next(ptr);
+//    List_next(ptr);
+//    List_next(ptr);
+//    printf("\n Current: %d", ptr->current->data);
+    printf("\n %d", ptr->currentOutOfBoundsFront);
+    List_insert(ptr,(int *) 10);
+    print(ptr);
 
-    printf("%p \n", (int*) ptr->current->data);
 
 
 //    List*ptr2 = List_create();
