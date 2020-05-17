@@ -91,17 +91,43 @@ void* List_first(List* pList) {
 
 // Returns a pointer to the last item in pList and makes the last item the current item.
 // Returns NULL and sets current item to NULL if list is empty.
-void* List_last(List* pList);
+void* List_last(List* pList) {
+    if (pList->size == 0) {
+        pList->current = NULL;
+        return NULL;
+    } else {
+        pList->current = pList->tail;
+        return pList->current;
+    }
+}
 
 // Advances pList's current item by one, and returns a pointer to the new current item.
 // If this operation advances the current item beyond the end of the pList, a NULL pointer
 // is returned and the current item is set to be beyond end of pList.
-void* List_next(List* pList);
+void* List_next(List* pList) {
+    if (pList->current->next == NULL) {
+        pList->currentOutOfBoundsBack = true;
+        pList->current = NULL;
+        return pList->current;
+    } else {
+        pList->current = pList->current->next;
+        return pList->current;
+    }
+}
 
 // Backs up pList's current item by one, and returns a pointer to the new current item.
 // If this operation backs up the current item beyond the start of the pList, a NULL pointer
 // is returned and the current item is set to be before the start of pList.
-void* List_prev(List* pList);
+void* List_prev(List* pList) {
+    if (pList->current->previous == NULL) {
+        pList->currentOutOfBoundsFront = true;
+        pList->current = NULL;
+        return pList->current;
+    } else {
+        pList->current = pList->current->previous;
+        return pList->current;
+    }
+}
 
 // Returns a pointer to the current item in pList.
 // Returns NULL if current is before the start of the pList, or after the end of the pList.

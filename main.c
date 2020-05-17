@@ -14,6 +14,12 @@ int main() {
     printf("%i \n", List_count(ptr));
     List_first(ptr);
     printf("%p \n", (int*) ptr->current->data);
+    List_next(ptr);
+    List_prev(ptr);
+    List_prev(ptr);
+    printf("%d \n", ptr->currentOutOfBoundsFront);
+
+    printf("%p \n", (int*) ptr->current->data);
 
 
 //    List*ptr2 = List_create();
