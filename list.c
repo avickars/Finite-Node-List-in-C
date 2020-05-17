@@ -73,11 +73,21 @@ List* List_create() {
 }
 
 // Returns the number of items in pList.
-int List_count(List* pList);
+int List_count(List* pList) {
+    return pList->size;
+}
 
 // Returns a pointer to the first item in pList and makes the first item the current item.
 // Returns NULL and sets current item to NULL if list is empty.
-void* List_first(List* pList);
+void* List_first(List* pList) {
+    if (pList->size == 0) {
+        pList->current = NULL;
+        return NULL;
+    } else {
+        pList->current = pList->head;
+        return pList->current;
+    }
+}
 
 // Returns a pointer to the last item in pList and makes the last item the current item.
 // Returns NULL and sets current item to NULL if list is empty.
