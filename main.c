@@ -6,7 +6,11 @@ int main() {
 
 
     List*ptr1 = List_create();
-    print(ptr1->head, ptr1->head->data);
+    List_append(ptr1, (int *) 5);
+    List_append(ptr1, (int *) 6);
+    List_append(ptr1, (int *) 7);
+    List_prepend(ptr1, (int *) 8);
+    print(ptr1);
 
 //    List*ptr2 = List_create();
 //    List*ptr3 = List_create();

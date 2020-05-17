@@ -12,56 +12,64 @@ static Node* availableNodes;
 
 static bool firstCreate = true;
 
-void initializeHead(List *pList) {
-    pList->head = NULL;
-    pList->tail = NULL;
-    pList->size = 0;
-    pList->current = NULL;
-    pList->currentOutOfBoundsBack = true;
-    pList->currentOutOfBoundsFront = true;
-}
-
-void initializeNode(Node *node) {
-    availableNodes->previous = NULL;
-    availableNodes->data = (void*) NULL;
-    availableNodes->next = NULL;
-}
-
-void constructor() {
-    // Constructing a Singly linked list of available nodes
+// Creates a singly linked list of available nodes
+void Constructor() {
     availableNodes = &nodes[0];
-//    initializeNode(availableNodes);
+    Node *nodePtr = availableNodes;
     for (int i = 1; i < LIST_MAX_NUM_NODES; ++i) {
-//        initializeNode(&nodes[i]);
-        nodes[i].previous = availableNodes;
-        availableNodes = &nodes[i];
+        nodePtr->next = &nodes[i];
+        nodePtr = nodePtr->next;
     }
 }
 
-void *Get_new_node() {
+void initializeList(List *pList) {
+    pList->current = NULL;
+    pList->currentOutOfBoundsBack = true;
+    pList->currentOutOfBoundsFront = true;
+    pList->head = NULL;
+    pList->size = 0;
+    pList->tail = NULL;
+}
+
+void initializeNode(Node *pNode, void *pItem) {
+    pNode->next = NULL;
+    pNode->previous = NULL;
+    pNode->data = pItem;
+}
+
+void *Get_new_node(void *pItem) {
     assert(numNodes < LIST_MAX_NUM_NODES);
-
-    Node *newNode = availableNodes;
-    availableNodes = availableNodes->previous;
-
-    initializeNode(newNode);
-
+    Node  * newNode = availableNodes;
+    availableNodes = availableNodes->next;
     numNodes++;
 
+    initializeNode(newNode, pItem);
     return newNode;
+
 }
+
+void print(List *pList) {
+    Node *temp = pList->head;
+    printf("In Print \n");
+    while (temp != NULL) {
+        printf("%p \n", (int*) temp->data);
+        temp = temp->next;
+    }
+}
+
+
 
 // Makes a new, empty list, and returns its reference on success.
 // Returns a NULL pointer on failure.
 List* List_create() {
     if (firstCreate) {
-        constructor();
-        firstCreate = false;
-    } else if (numHeads >= LIST_MAX_NUM_HEADS)
-        return NULL;
+        Constructor();
+    }
+    List *newList = &heads[numHeads];
+    initializeList(newList);
+    numHeads++;
 
-    initializeHead(&heads[numHeads]);
-    return &heads[numHeads++];
+    return newList;
 }
 
 // Returns the number of items in pList.
@@ -103,12 +111,57 @@ int List_insert(List* pList, void* pItem);
 
 // Adds item to the end of pList, and makes the new item the current one.
 // Returns 0 on success, -1 on failure.
-int List_append(List* pList, void* pItem);
+int List_append(List* pList, void* pItem) {
+    if (numNodes >= LIST_MAX_NUM_NODES) {
+        return 0;
+    } else if (pList->size == 0) {
+        pList->current = Get_new_node(pItem);
+        pList->head = pList->current;
+        pList->tail = pList->current;
+        pList->size++;
+        pList->currentOutOfBoundsFront = false;
+        pList->currentOutOfBoundsBack = false;
+    } else {
+        pList->current = Get_new_node(pItem);
+        pList->current->previous = pList->tail;
+        pList->tail->next = pList->current;
+        pList->tail = pList->current;
+        pList->size++;
+        if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
+            if (pList->currentOutOfBoundsFront)
+                pList->currentOutOfBoundsFront = false;
+            else
+                pList->currentOutOfBoundsBack = false;
+        }
+    }
+}
+
 
 // Adds item to the front of pList, and makes the new item the current one.
 // Returns 0 on success, -1 on failure.
 int List_prepend(List* pList, void* pItem) {
-
+    if (numNodes >= LIST_MAX_NUM_NODES) {
+        return 0;
+    } else if (pList->size == 0) {
+        pList->current = Get_new_node(pItem);
+        pList->head = pList->current;
+        pList->tail = pList->current;
+        pList->size++;
+        pList->currentOutOfBoundsFront = false;
+        pList->currentOutOfBoundsBack = false;
+    } else {
+        pList->current = Get_new_node(pItem);
+        pList->current->next = pList->head;
+        pList->head->previous = pList->current;
+        pList->head = pList->current;
+        pList->size++;
+        if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
+            if (pList->currentOutOfBoundsFront)
+                pList->currentOutOfBoundsFront = false;
+            else
+                pList->currentOutOfBoundsBack = false;
+        }
+    }
 }
 
 // Return current item and take it out of pList. Make the next item the current one.

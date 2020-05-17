@@ -25,6 +25,8 @@ typedef struct {
     int size;
 } List;
 
+void print(List *pList);
+
 // Maximum number of unique lists the system can support
 // (You may modify its value for your needs)
 #define LIST_MAX_NUM_HEADS 10
