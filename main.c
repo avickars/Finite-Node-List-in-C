@@ -5,14 +5,21 @@ int main() {
     printf("Hello, World!\n");
 
 
-    List*ptr = List_create();
+    List *ptr = List_create();
     List_append(ptr, (int *) 5);
-    printf("%d \n", ptr->size);
+    List_append(ptr, (int *) 6);
     print(ptr);
-    List_remove(ptr);
-    printf("%d \n", ptr->size);
-    List_insert(ptr, (int *) 10);
+
+    List *ptr1 = List_create();
+    List_append(ptr1, (int *) 7);
+    List_append(ptr1, (int *) 8);
+    print(ptr1);
+    printf("%p \n", ptr1);
+    List_concat(ptr, ptr1);
+    printf("%p \n", ptr1);
+    print(ptr1);
     print(ptr);
+
 
 
 

@@ -15,7 +15,8 @@ struct Node_s {
     void *data;
 };
 
-typedef struct {
+typedef struct List_s List;
+struct List_s {
     // TODO: You should change this!
     Node *head;
     Node *tail;
@@ -23,17 +24,18 @@ typedef struct {
     bool currentOutOfBoundsFront;
     bool currentOutOfBoundsBack;
     int size;
-} List;
+    List *next;
+};
 
 void print(List *pList);
 
 // Maximum number of unique lists the system can support
 // (You may modify its value for your needs)
-#define LIST_MAX_NUM_HEADS 10
+#define LIST_MAX_NUM_HEADS 2
 
 // Maximum total number of nodes (statically allocated) to be shared across all lists
 // (You may modify its value for your needs)
-#define LIST_MAX_NUM_NODES 100
+#define LIST_MAX_NUM_NODES 5
 
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or

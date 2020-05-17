@@ -8,11 +8,12 @@ int numHeads = 0;
 static Node nodes[LIST_MAX_NUM_NODES];
 int numNodes = 0;
 
-static Node* availableNodes;
+static Node *availableNodes;
+static List *availableHeads;
 
 static bool firstCreate = true;
 
-// Creates a singly linked list of available nodes
+// Creates a singly linked list of available nodes and available heads
 void Constructor() {
     availableNodes = &nodes[0];
     Node *nodePtr = availableNodes;
@@ -20,15 +21,25 @@ void Constructor() {
         nodePtr->next = &nodes[i];
         nodePtr = nodePtr->next;
     }
+
+    availableHeads = &heads[numHeads];
+    List *headPtr = availableHeads;
+    for (int j = 1; j < LIST_MAX_NUM_HEADS; ++j) {
+        headPtr->next = &heads[j];
+        headPtr = headPtr->next;
+    }
 }
 
-void initializeList(List *pList) {
+
+
+void initializeHead(List *pList) {
     pList->current = NULL;
     pList->currentOutOfBoundsBack = true;
     pList->currentOutOfBoundsFront = true;
     pList->head = NULL;
     pList->size = 0;
     pList->tail = NULL;
+    pList->next = NULL;
 }
 
 void initializeNode(Node *pNode, void *pItem) {
@@ -48,6 +59,16 @@ void *Get_new_node(void *pItem) {
 
 }
 
+void *get_new_head(){
+    assert(numHeads < LIST_MAX_NUM_HEADS);
+    List *newHead = availableHeads;
+    availableHeads = availableHeads->next;
+    numHeads++;
+    initializeHead(newHead);
+
+    return newHead;
+}
+
 void print(List *pList) {
     Node *temp = pList->head;
     while (temp != NULL) {
@@ -61,7 +82,16 @@ void Return_node(Node *pNode) {
 //    initializeNode(pNode);
     pNode->next = availableNodes;
     availableNodes = pNode;
+    pNode = NULL;
     numNodes--;
+}
+
+void Return_head(List *head) {
+    initializeHead(head);
+    head->next = availableHeads;
+    availableHeads = head;
+    head = NULL;
+    numHeads--;
 }
 
 
@@ -69,13 +99,13 @@ void Return_node(Node *pNode) {
 // Makes a new, empty list, and returns its reference on success.
 // Returns a NULL pointer on failure.
 List* List_create() {
+    if (numHeads >= LIST_MAX_NUM_HEADS)
+        return NULL;
     if (firstCreate) {
         Constructor();
+        firstCreate = false;
     }
-    List *newList = &heads[numHeads];
-    initializeList(newList);
-    numHeads++;
-
+    List *newList = get_new_head();
     return newList;
 }
 
@@ -259,7 +289,7 @@ void* List_remove(List* pList) {
         void *data = pList->current->data;
         if (pList->size == 1) {
             Return_node(pList->current);
-            initializeList(pList);
+            initializeHead(pList);
         } else if (pList->current == pList->head) {
             pList->head = pList->current->next;
             pList->head->previous = NULL;
@@ -289,13 +319,21 @@ void* List_remove(List* pList) {
 // Adds pList2 to the end of pList1. The current pointer is set to the current pointer of pList1.
 // pList2 no longer exists after the operation; its head is available
 // for future operations.
-void List_concat(List* pList1, List* pList2);
+void List_concat(List* pList1, List* pList2) {
+    pList1->tail->next = pList2->head;
+    pList2->head->previous = pList1->tail;
+    pList1->size += pList2->size;
+
+    Return_head(pList2);
+}
 
 // Delete pList. itemFree is a pointer to a routine that frees an item.
 // It should be invoked (within List_free) as: (*pItemFree)(itemToBeFreedFromNode);
 // pList and all its nodes no longer exists after the operation; its head and nodes are
 // available for future operations.
-void List_free(List* pList, void* pItemFree);
+void List_free(List* pList, void* pItemFree) {
+
+}
 
 // Return last item and take it out of pList. Make the new last item the current one.
 // Return NULL if pList is initially empty.
