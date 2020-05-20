@@ -45,7 +45,7 @@ void initializeHead(List *pList) {
 void initializeNode(Node *pNode, void *pItem) {
     pNode->next = NULL;
     pNode->previous = NULL;
-    pNode->data = pItem;
+    pNode->item = pItem;
 }
 
 void *Get_new_node(void *pItem) {
@@ -72,7 +72,7 @@ void *get_new_head(){
 void print(List *pList) {
     Node *temp = pList->head;
     while (temp != NULL) {
-        printf("%d ", temp->data);
+        printf("%d ", *(int*)temp->item);
         temp = temp->next;
     }
     printf("\n");
@@ -93,8 +93,6 @@ void Return_head(List *head) {
     head = NULL;
     numHeads--;
 }
-
-
 
 // Makes a new, empty list, and returns its reference on success.
 // Returns a NULL pointer on failure.
@@ -142,7 +140,7 @@ void* List_last(List* pList) {
 // If this operation advances the current item beyond the end of the pList, a NULL pointer
 // is returned and the current item is set to be beyond end of pList.
 void* List_next(List* pList) {
-    if (pList->current->next == NULL) {
+    if (pList->current->next == NULL || pList->currentOutOfBoundsBack) {
         pList->currentOutOfBoundsBack = true;
         pList->current = NULL;
         return pList->current;
@@ -156,7 +154,7 @@ void* List_next(List* pList) {
 // If this operation backs up the current item beyond the start of the pList, a NULL pointer
 // is returned and the current item is set to be before the start of pList.
 void* List_prev(List* pList) {
-    if (pList->current->previous == NULL) {
+    if (pList->current->previous == NULL || pList->currentOutOfBoundsFront) {
         pList->currentOutOfBoundsFront = true;
         pList->current = NULL;
         return pList->current;
@@ -286,7 +284,7 @@ void* List_remove(List* pList) {
     if (pList->currentOutOfBoundsFront || pList->currentOutOfBoundsBack) {
         return NULL;
     } else {
-        void *data = pList->current->data;
+        void *data = pList->current->item;
         if (pList->size == 1) {
             Return_node(pList->current);
             initializeHead(pList);
@@ -320,18 +318,19 @@ void* List_remove(List* pList) {
 // pList2 no longer exists after the operation; its head is available
 // for future operations.
 void List_concat(List* pList1, List* pList2) {
+    printf("here \n");
     pList1->tail->next = pList2->head;
     pList2->head->previous = pList1->tail;
     pList1->size += pList2->size;
-
     Return_head(pList2);
 }
 
-// Delete pList. itemFree is a pointer to a routine that frees an item.
-// It should be invoked (within List_free) as: (*pItemFree)(itemToBeFreedFromNode);
+// Delete pList. pItemFreeFn is a pointer to a routine that frees an item.
+// It should be invoked (within List_free) as: (*pItemFreeFn)(itemToBeFreedFromNode);
 // pList and all its nodes no longer exists after the operation; its head and nodes are
 // available for future operations.
-void List_free(List* pList, void* pItemFree) {
+// UPDATED: Changed function pointer type, May 19
+void List_free(List* pList, FREE_FN pItemFreeFn) {
 
 }
 

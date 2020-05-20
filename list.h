@@ -1,4 +1,4 @@
-// List data type
+// List item type
 // You may modify this file as needed; however,
 // you may *NOT* modify the function prototypes or constant names.
 
@@ -12,7 +12,7 @@ struct Node_s {
     // TODO: You should change this!
     Node *previous;
     Node *next;
-    void *data;
+    void *item;
 };
 
 typedef struct List_s List;
@@ -35,7 +35,7 @@ void print(List *pList);
 
 // Maximum total number of nodes (statically allocated) to be shared across all lists
 // (You may modify its value for your needs)
-#define LIST_MAX_NUM_NODES 5
+#define LIST_MAX_NUM_NODES 6
 
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or
@@ -101,11 +101,13 @@ void* List_remove(List* pList);
 // for future operations.
 void List_concat(List* pList1, List* pList2);
 
-// Delete pList. itemFree is a pointer to a routine that frees an item.
-// It should be invoked (within List_free) as: (*pItemFree)(itemToBeFreedFromNode);
+// Delete pList. pItemFreeFn is a pointer to a routine that frees an item.
+// It should be invoked (within List_free) as: (*pItemFreeFn)(itemToBeFreedFromNode);
 // pList and all its nodes no longer exists after the operation; its head and nodes are
 // available for future operations.
-void List_free(List* pList, void* pItemFree);
+// UPDATED: Changed function pointer type, May 19
+typedef void (*FREE_FN)(void* pItem);
+void List_free(List* pList, FREE_FN pItemFreeFn);
 
 // Return last item and take it out of pList. Make the new last item the current one.
 // Return NULL if pList is initially empty.
