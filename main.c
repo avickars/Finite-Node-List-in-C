@@ -1,19 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "list.h"
-
-void freeItem(void *item) {
-    free(item);
-}
-
-int main() {
-
-
-    printf("Hello, World!\n");
-
-
+//#include <stdio.h>
+//#include "list.h"
+//
+//static void freeItem(void *item) {
+////    printf("Here");
+//}
+//
+//static bool itemEquals(void *pItem, void *pArg) {
+//    return (*(int*) pItem == *(int*) pArg);
+//}
+//
+//int main() {
+//
+//
+//    printf("Hello, World!\n");
+//
+//
 //    List *ptr = List_create();
-    int x= 5;
+//    int x= 5;
 //    int y = 6;
 //    int z = 7;
 //    List_append(ptr, &x);
@@ -32,15 +35,14 @@ int main() {
 //    printf("List 2: ");
 //    print(ptr2);
 //    List_concat(ptr,ptr2);
-//    printf("%d \n", ptr->size);
-//    printf("List 1 & 2: ");
+//    int k = 10;
+//
+//    printf("List 1 and 2: ");
 //    print(ptr);
-//    ptr2 = NULL;
-//    printf("%p \n", ptr2);
-    printf("1 %p \n", &x);
-free((int*) x);
-printf("2 %p", &x);
-    printf("3 %d", x);
-
-    return 0;
-}
+//
+//
+//    printf("%p", List_search(ptr, &itemEquals, &k));
+//
+//
+//    return 0;
+//}

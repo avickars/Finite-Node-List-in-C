@@ -2,25 +2,32 @@
 #include <stdio.h>
 #include <assert.h>
 
+// Declaring a static array of list heads, and a static integer numHeads that counts the number of heads currently in use.
 static List heads[LIST_MAX_NUM_HEADS];
-int numHeads = 0;
+static int numHeads = 0;
 
+// Declaring a static array of list nodes, and a static integer numNodes that counts the number of heads currently in use.
 static Node nodes[LIST_MAX_NUM_NODES];
-int numNodes = 0;
+static int numNodes = 0;
 
+// Declaring a pointer to the first element in a singly linked list of available heads.
 static Node *availableNodes;
+
+// Declaring a pointer to the first element in a singly linked list of available nodes.
 static List *availableHeads;
 
+// Declaring an indicator that indicates whether or not the client is performing their first List_create()
 static bool firstCreate = true;
 
-// Creates a singly linked list of available nodes and available heads
+// Creates two singly linked lists.  One of the available nodes, and one of the available heads.
 void Constructor() {
-    availableNodes = &nodes[0];
+    availableNodes = &nodes[numNodes];
     Node *nodePtr = availableNodes;
     for (int i = 1; i < LIST_MAX_NUM_NODES; ++i) {
         nodePtr->next = &nodes[i];
         nodePtr = nodePtr->next;
     }
+    nodePtr->next = NULL;
 
     availableHeads = &heads[numHeads];
     List *headPtr = availableHeads;
@@ -28,9 +35,8 @@ void Constructor() {
         headPtr->next = &heads[j];
         headPtr = headPtr->next;
     }
+    headPtr->next = NULL;
 }
-
-
 
 void initializeHead(List *pList) {
     pList->current = NULL;
@@ -78,8 +84,15 @@ void print(List *pList) {
     printf("\n");
 }
 
+void printNumNodes() {
+    printf("Number of Available Nodes: %d \n", LIST_MAX_NUM_NODES - numNodes);
+}
+
+void printNumHeads() {
+    printf("Number of Available Heads: %d \n", LIST_MAX_NUM_HEADS - numHeads);
+}
+
 void Return_node(Node *pNode) {
-//    initializeNode(pNode);
     pNode->next = availableNodes;
     availableNodes = pNode;
     pNode = NULL;
@@ -97,9 +110,9 @@ void Return_head(List *head) {
 // Makes a new, empty list, and returns its reference on success.
 // Returns a NULL pointer on failure.
 List* List_create() {
-    if (numHeads >= LIST_MAX_NUM_HEADS)
+    if (numHeads >= LIST_MAX_NUM_HEADS) // If their are no more heads free heads available, function returns null
         return NULL;
-    if (firstCreate) {
+    if (firstCreate) { // Testing if this is the first time a client has called List_create().  If yes it will call the Constructor() method for some extra setup
         Constructor();
         firstCreate = false;
     }
@@ -119,8 +132,12 @@ void* List_first(List* pList) {
         pList->current = NULL;
         return NULL;
     } else {
+        if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
+            pList->currentOutOfBoundsFront = false;
+            pList->currentOutOfBoundsBack = false;
+        }
         pList->current = pList->head;
-        return pList->current;
+        return pList->current->item;
     }
 }
 
@@ -131,8 +148,12 @@ void* List_last(List* pList) {
         pList->current = NULL;
         return NULL;
     } else {
+        if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
+            pList->currentOutOfBoundsFront = false;
+            pList->currentOutOfBoundsBack = false;
+        }
         pList->current = pList->tail;
-        return pList->current;
+        return pList->current->item;
     }
 }
 
@@ -140,13 +161,17 @@ void* List_last(List* pList) {
 // If this operation advances the current item beyond the end of the pList, a NULL pointer
 // is returned and the current item is set to be beyond end of pList.
 void* List_next(List* pList) {
-    if (pList->current->next == NULL || pList->currentOutOfBoundsBack) {
+    if (pList->currentOutOfBoundsFront) {
+        pList->current = pList->head;
+        pList->currentOutOfBoundsFront = false;
+        return pList->current->item;
+    } else if (pList->currentOutOfBoundsBack || pList->current->next == NULL) {
         pList->currentOutOfBoundsBack = true;
         pList->current = NULL;
-        return pList->current;
+        return NULL;
     } else {
         pList->current = pList->current->next;
-        return pList->current;
+        return pList->current->item;
     }
 }
 
@@ -154,13 +179,17 @@ void* List_next(List* pList) {
 // If this operation backs up the current item beyond the start of the pList, a NULL pointer
 // is returned and the current item is set to be before the start of pList.
 void* List_prev(List* pList) {
-    if (pList->current->previous == NULL || pList->currentOutOfBoundsFront) {
+    if (pList->currentOutOfBoundsBack) {
+        pList->current = pList->tail;
+        pList->currentOutOfBoundsBack = false;
+        return pList->current->item;
+    } else if (pList->currentOutOfBoundsFront || pList->current->previous == NULL ) {
         pList->currentOutOfBoundsFront = true;
         pList->current = NULL;
-        return pList->current;
+        return NULL;
     } else {
         pList->current = pList->current->previous;
-        return pList->current;
+        return pList->current->item;
     }
 }
 
@@ -170,7 +199,7 @@ void* List_curr(List* pList) {
     if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront)
         return NULL;
     else
-        return pList->current;
+        return pList->current->item;
 }
 
 // Adds the new item to pList directly after the current item, and makes item the current item.
@@ -178,19 +207,20 @@ void* List_curr(List* pList) {
 // the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
 int List_add(List* pList, void* pItem) {
-    if (numNodes >= LIST_MAX_NUM_NODES)
-        return -1;
-
     if (pList->currentOutOfBoundsBack || pList->current == pList->tail) {
         return List_append(pList, pItem);
     } else if (pList->currentOutOfBoundsFront) {
         return List_prepend(pList, pItem);
     } else {
+        if (numNodes >= LIST_MAX_NUM_NODES)
+            return -1;
+
         Node *newNode = Get_new_node(pItem);
         newNode->next = pList->current->next;
         newNode->previous = pList->current;
         pList->current->next->previous = newNode;
         pList->current->next = newNode;
+        pList->current = newNode;
         pList->size++;
         return 0;
     }
@@ -202,20 +232,21 @@ int List_add(List* pList, void* pItem) {
 // If the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
 int List_insert(List* pList, void* pItem) {
-    if (numNodes >= LIST_MAX_NUM_NODES)
-        return -1;
-
     if (pList->currentOutOfBoundsBack) {
         return List_append(pList, pItem);
     } else if (pList->currentOutOfBoundsFront || pList->current == pList->head) {
         return List_prepend(pList, pItem);
     } else {
+        if (numNodes >= LIST_MAX_NUM_NODES)
+            return -1;
+
         Node *newNode = Get_new_node(pItem);
         newNode->next = pList->current;
         newNode->previous = pList->current->previous;
         pList->current->previous->next = newNode;
         pList->current->previous = newNode;
         pList->size++;
+        pList->current = newNode;
         return 0;
     }
 }
@@ -239,10 +270,8 @@ int List_append(List* pList, void* pItem) {
         pList->tail = pList->current;
         pList->size++;
         if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
-            if (pList->currentOutOfBoundsFront)
-                pList->currentOutOfBoundsFront = false;
-            else
-                pList->currentOutOfBoundsBack = false;
+            pList->currentOutOfBoundsFront = false;
+            pList->currentOutOfBoundsBack = false;
         }
     }
     return 0;
@@ -268,10 +297,8 @@ int List_prepend(List* pList, void* pItem) {
         pList->head = pList->current;
         pList->size++;
         if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront) {
-            if (pList->currentOutOfBoundsFront)
-                pList->currentOutOfBoundsFront = false;
-            else
-                pList->currentOutOfBoundsBack = false;
+            pList->currentOutOfBoundsFront = false;
+            pList->currentOutOfBoundsBack = false;
         }
     }
     return 0;
@@ -318,9 +345,9 @@ void* List_remove(List* pList) {
 // pList2 no longer exists after the operation; its head is available
 // for future operations.
 void List_concat(List* pList1, List* pList2) {
-    printf("here \n");
     pList1->tail->next = pList2->head;
     pList2->head->previous = pList1->tail;
+    pList1->tail = pList2->tail;
     pList1->size += pList2->size;
     Return_head(pList2);
 }
@@ -331,12 +358,41 @@ void List_concat(List* pList1, List* pList2) {
 // available for future operations.
 // UPDATED: Changed function pointer type, May 19
 void List_free(List* pList, FREE_FN pItemFreeFn) {
+    Node *tempNode = pList->head;
+    Node *tempNode2;
+    while (tempNode != NULL) {
+        (*pItemFreeFn)(tempNode->item);
+        tempNode2 = tempNode;
+        tempNode = tempNode->next;
+        Return_node(tempNode2);
+        pList->size--;
+    }
+    printf("\n");
+
+    Return_head(pList);
 
 }
 
 // Return last item and take it out of pList. Make the new last item the current one.
 // Return NULL if pList is initially empty.
-void* List_trim(List* pList);
+void* List_trim(List* pList) {
+    if (pList->size == 0) {
+        return NULL;
+    } else {
+        Node *tempNode = pList->tail;
+        pList->current = pList->tail->previous;
+        if (pList->current == NULL) { // Testing if the
+            Return_node(tempNode);
+            initializeHead(pList);
+            return tempNode->item;
+        }
+        pList->size--;
+        pList->current->next = NULL;
+        pList->tail = pList->current;
+        Return_node(tempNode);
+        return tempNode->item;
+    }
+}
 
 // Search pList, starting at the current item, until the end is reached or a match is found.
 // In this context, a match is determined by the comparator parameter. This parameter is a
@@ -348,4 +404,17 @@ void* List_trim(List* pList);
 // that item is returned. If no match is found, the current pointer is left beyond the end of
 // the list and a NULL pointer is returned.
 typedef bool (*COMPARATOR_FN)(void* pItem, void* pComparisonArg);
-void* List_search(List* pList, COMPARATOR_FN pComparator, void* pComparisonArg);
+void* List_search(List* pList, COMPARATOR_FN pComparator, void* pComparisonArg) {
+    Node *tempNode = pList->current;
+    while (tempNode != NULL) {
+        if ((*pComparator)(tempNode->item, pComparisonArg)) {
+            pList->current = tempNode;
+            return pList->current->item;
+        }
+        tempNode = tempNode->next;
+    }
+
+    pList->current = NULL;
+    pList->currentOutOfBoundsBack = true;
+    return NULL;
+}

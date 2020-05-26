@@ -27,15 +27,19 @@ struct List_s {
     List *next;
 };
 
+void printNumNodes();
+
+void printNumHeads();
+
 void print(List *pList);
 
 // Maximum number of unique lists the system can support
 // (You may modify its value for your needs)
-#define LIST_MAX_NUM_HEADS 2
+#define LIST_MAX_NUM_HEADS 10
 
 // Maximum total number of nodes (statically allocated) to be shared across all lists
 // (You may modify its value for your needs)
-#define LIST_MAX_NUM_NODES 6
+#define LIST_MAX_NUM_NODES 100
 
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or
