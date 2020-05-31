@@ -42,6 +42,7 @@ static void Constructor() {
 
 // This function takes a list head and initializes is values
 static void initializeHead(List *pList) {
+    assert(pList != NULL);
     pList->current = NULL;
     pList->currentOutOfBoundsBack = true; // These 2 values are set to be both true only in the case when pList has no nodes, which in this case the we say the current item is both
     // before the list head and after the list tail
@@ -71,7 +72,8 @@ static void *Get_new_node(void *pItem) {
 
 // This function removes a list head from the linked list of available heads and returns a pointer to it.
 static void *get_new_head(){
-    assert(numHeads < LIST_MAX_NUM_HEADS); // Checking to ensure there is an available head
+    assert(numHeads < LIST_MAX_NUM_HEADS); // Checking to ensure there is an available head.  I use an assert here because if the program gets here while there are no more heads,
+    // something bad has gone wrong
     List *newHead = availableHeads;
     availableHeads = availableHeads->next;  // Removing the head from the list of available heads
     numHeads++; // Incrementing the counter of the number of heads in use
@@ -129,12 +131,14 @@ List* List_create() {
 
 // Returns the number of items in pList.
 int List_count(List* pList) {
+    assert(pList != NULL);
     return pList->size;
 }
 
 // Returns a pointer to the first item in pList and makes the first item the current item.
 // Returns NULL and sets current item to NULL if list is empty.
 void* List_first(List* pList) {
+    assert(pList != NULL);
     if (pList->size == 0) { //Testing if pList is empty
         pList->current = NULL;
         return NULL;
@@ -152,6 +156,7 @@ void* List_first(List* pList) {
 // Returns a pointer to the last item in pList and makes the last item the current item.
 // Returns NULL and sets current item to NULL if list is empty.
 void* List_last(List* pList) {
+    assert(pList != NULL);
     if (pList->size == 0) { // Testing if pList is empty
         pList->current = NULL;
         return NULL;
@@ -170,6 +175,7 @@ void* List_last(List* pList) {
 // If this operation advances the current item beyond the end of the pList, a NULL pointer
 // is returned and the current item is set to be beyond end of pList.
 void* List_next(List* pList) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsFront) {
         // Testing if the current item is before the front of pList.  If so we automatically set the current item to the front of pList, and designate that the current
         // item is no longer before the front of pList
@@ -193,6 +199,7 @@ void* List_next(List* pList) {
 // If this operation backs up the current item beyond the start of the pList, a NULL pointer
 // is returned and the current item is set to be before the start of pList.
 void* List_prev(List* pList) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsBack) {
         // Testing if the current item is beyond the end of pList.  If so we automatically set the current item to the back of pList, and designate that the current
         // item is no longer before the front of pList
@@ -215,6 +222,7 @@ void* List_prev(List* pList) {
 // Returns a pointer to the current item in pList.
 // Returns NULL if current is before the start of the pList, or after the end of the pList.
 void* List_curr(List* pList) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsBack || pList->currentOutOfBoundsFront)
         // Testing if the current item is before the start or after the end of pList.
         return NULL;
@@ -227,6 +235,7 @@ void* List_curr(List* pList) {
 // the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
 int List_add(List* pList, void* pItem) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsBack || pList->current == pList->tail) {
         // Testing if the current item is beyond the end of pList or if it is set to the tail of the list.  In either case an item is added at the end of the list.  Hence
         // List_append() is called to perform this.
@@ -259,6 +268,7 @@ int List_add(List* pList, void* pItem) {
 // If the current pointer is beyond the end of the pList, the item is added at the end.
 // Returns 0 on success, -1 on failure.
 int List_insert(List* pList, void* pItem) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsBack) {
         // Testing if the current item is beyond the end of pList.  If so we can simply call List_append() to insert pItem at the end of the list.
         return List_append(pList, pItem);
@@ -287,6 +297,7 @@ int List_insert(List* pList, void* pItem) {
 // Adds item to the end of pList, and makes the new item the current one.
 // Returns 0 on success, -1 on failure.
 int List_append(List* pList, void* pItem) {
+    assert(pList != NULL);
     if (numNodes >= LIST_MAX_NUM_NODES) {
         // Testing if there is an available node
         return -1;
@@ -319,6 +330,7 @@ int List_append(List* pList, void* pItem) {
 // Adds item to the front of pList, and makes the new item the current one.
 // Returns 0 on success, -1 on failure.
 int List_prepend(List* pList, void* pItem) {
+    assert(pList != NULL);
     if (numNodes >= LIST_MAX_NUM_NODES) {
         // Testing if there is an available node
         return -1;
@@ -351,6 +363,7 @@ int List_prepend(List* pList, void* pItem) {
 // If the current pointer is before the start of the pList, or beyond the end of the pList,
 // then do not change the pList and return NULL.
 void* List_remove(List* pList) {
+    assert(pList != NULL);
     if (pList->currentOutOfBoundsFront || pList->currentOutOfBoundsBack) {
         // Testing if the current item is before the front of the list or beyond the end of the list.  In either case NULL is returned
         return NULL;
@@ -394,12 +407,23 @@ void* List_remove(List* pList) {
 // pList2 no longer exists after the operation; its head is available
 // for future operations.
 void List_concat(List* pList1, List* pList2) {
-    // Concating pList1, and pList2.  At the end we return pList2 to the list of available heads using Return_head()
-    pList1->tail->next = pList2->head;
-    pList2->head->previous = pList1->tail;
-    pList1->tail = pList2->tail;
-    pList1->size += pList2->size;
-    Return_head(pList2);
+    assert(pList1 != NULL && pList2 != NULL);
+    if (pList1->size == 0) { // Testing if pList1 is empty, which then we can just copy pList2 to pList1, and adjust the current pointer to NULL (since the current pointer of
+        // pList1 is NULL)
+        pList1 = pList2;
+        pList1->current = NULL;
+        Return_head(pList2);
+    } else if (pList2->size == 0) { // Testing if pList2 is empty, which then we dont have to do anything except return the head of pList2 to the list of available heads
+        Return_head(pList2);
+        return;
+    } else {
+        // Concating pList1, and pList2.  At the end we return pList2 to the list of available heads using Return_head()
+        pList1->tail->next = pList2->head;
+        pList2->head->previous = pList1->tail;
+        pList1->tail = pList2->tail;
+        pList1->size += pList2->size;
+        Return_head(pList2);
+    }
 }
 
 // Delete pList. pItemFreeFn is a pointer to a routine that frees an item.
@@ -407,6 +431,7 @@ void List_concat(List* pList1, List* pList2) {
 // pList and all its nodes no longer exists after the operation; its head and nodes are
 // available for future operations.
 void List_free(List* pList, FREE_FN pItemFreeFn) {
+    assert(pList != NULL);
     // Function accepts pList, and passes the items contained in each node to the client defined function pItemFreeFn to free the item.  Then each node is returned to the
     // list of available nodes by calling Return_node().  Finally, we return the head for pList to the list of available available by calling Return_head().
     Node *tempNode = pList->head;
@@ -426,6 +451,7 @@ void List_free(List* pList, FREE_FN pItemFreeFn) {
 // Return last item and take it out of pList. Make the new last item the current one.
 // Return NULL if pList is initially empty.
 void* List_trim(List* pList) {
+    assert(pList != NULL);
     if (pList->size == 0) {
         // Testing if the size of pList is 0.  In this case NULL is returned
         return NULL;
@@ -460,6 +486,7 @@ void* List_trim(List* pList) {
 // the list and a NULL pointer is returned.
 typedef bool (*COMPARATOR_FN)(void* pItem, void* pComparisonArg);
 void* List_search(List* pList, COMPARATOR_FN pComparator, void* pComparisonArg) {
+    assert(pList != NULL);
     Node *tempNode = pList->current; // Set tempNode to the current node, to start search from the current node.
     while (tempNode != NULL) { // Continue the search until either the end of the list is reached or if the pComparisonArg is found.
         if ((*pComparator)(tempNode->item, pComparisonArg)) {

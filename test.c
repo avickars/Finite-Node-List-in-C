@@ -140,6 +140,8 @@ static void testComplex() {
     List_add(pList2, &five);
     List_add(pList2, &six);
     List_concat(pList,pList2);
+    print(pList);
+    print(pList2);
     CHECK(List_last(pList) == &six);
 
     // Testing to ensure the head for pList2 was returned to the pool of available heads
