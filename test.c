@@ -5,6 +5,8 @@
 #include "list.h"
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define CHECK(condition) do{ \
     if (!(condition)) { \
