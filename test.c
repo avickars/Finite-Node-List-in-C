@@ -37,13 +37,21 @@ static void testComplex() {
         pListArr[i] = List_create();
     }
     CHECK(pListArr[0] != NULL);
-    CHECK(List_count(pListArr[0]) == 0);
-    CHECK(pListArr[LIST_MAX_NUM_HEADS] == NULL);
+    CHECK(List_count(pListArr[0]) == 0); // Testing that the list head is initialized properly
+    CHECK(pListArr[LIST_MAX_NUM_HEADS] == NULL); // Testing that if there are no more heads available, NULL is returned
 
-    // Freeing the heads for further use
+    // Inserting some elements into the list pListArr[0]
+    int sameElementForAll = 5;
+    for (int m = 0; m < sameElementForAll; ++m) {
+        List_insert(pListArr[0], &sameElementForAll);
+    }
+
+    // Freeing the heads for further use.  Also  testing to ensure that all the nodes are also freed as well.  This is done
+    // by checking the amount of times complexTestFreeFn was used by checking the value of complexTestFreeCounter
     for (int j = 0; j < LIST_MAX_NUM_HEADS; ++j) {
         List_free(pListArr[j], complexTestFreeFn);
     }
+    CHECK(complexTestFreeCounter == sameElementForAll);
 
     // Creating a List for testing
     List *pList = List_create();
@@ -125,6 +133,21 @@ static void testComplex() {
     CHECK(List_curr(pList) == &three);
 
 
+    // Testing List_prepend() and List_first()
+    int negOne = -1;
+    CHECK(List_prepend(pList, &negOne) == 0);
+    List_next(pList); // shifting the current item by one to get a better test of List_first()
+    CHECK(List_first(pList) == &negOne);
+    CHECK(List_remove(pList) == &negOne);
+
+    // Testing List_append() and List_last()
+    int numberFour = 4;
+    CHECK(List_append(pList, &numberFour) == 0);
+    List_prev(pList); // shifting the current item by one to get a better test of List_last()
+    CHECK(List_last(pList) == &numberFour);
+    CHECK(List_remove(pList) == &numberFour);
+
+
     // Testing List_search()
     List_first(pList);
     CHECK(List_search(pList, itemEquals, &two) == &two);
@@ -140,8 +163,6 @@ static void testComplex() {
     List_add(pList2, &five);
     List_add(pList2, &six);
     List_concat(pList,pList2);
-    print(pList);
-    print(pList2);
     CHECK(List_last(pList) == &six);
 
     // Testing to ensure the head for pList2 was returned to the pool of available heads
@@ -169,7 +190,6 @@ int main() {
 
     testComplex();
 
-    // We got here?!? PASSED!
     printf("********************************\n");
     printf("           PASSED\n");
     printf("********************************\n");
