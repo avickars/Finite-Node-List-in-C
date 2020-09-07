@@ -44,7 +44,6 @@ void print(List *pList);
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or
 // bad List pointer. If it does, any behaviour is permitted (such as crashing).
-// HINT: Use assert(pList != NULL); just to add a nice check, but not required.
 
 // Makes a new, empty list, and returns its reference on success.
 // Returns a NULL pointer on failure.
